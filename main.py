@@ -64,8 +64,6 @@ def input_handler(driver, buttonPressed):
     response = None
 
     if buttonPressed == rb.power:
-        response = "shutting down..."
-        Handler.send_response(200, response)
         driver.quit()
         quit()
     elif buttonPressed == rb.rld:
