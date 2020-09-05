@@ -77,7 +77,7 @@ def input_handler(driver, buttonPressed):
         (newScene, response) = currentScene.input_handler(driver, buttonPressed)
         
         if newScene != None:
-            scenes_int2imp[newScene]
+            currentScene = scenes_int2imp[newScene]
             
             response = currentScene.load_scene(driver)
             print("[driver] switched scene to " + currentScene.name)
