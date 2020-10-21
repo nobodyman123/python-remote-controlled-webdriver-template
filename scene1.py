@@ -7,6 +7,8 @@ name = "scene 1"
 def load_scene(driver):
     response = None
 
+    response = "you are now using google, way better than bing!"
+
     return response
 
 def input_handler(driver, buttonPressed):
@@ -18,6 +20,5 @@ def input_handler(driver, buttonPressed):
     elif buttonPressed == rb.toggle_scene:
         driver.get("https://www.bing.com")
         newScene = scenes.sc2
-        response = "you are now using bing, why would you do this?"
         
     return (newScene, response)

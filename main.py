@@ -2,26 +2,29 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import remote_buttons as rb
 from selenium import webdriver
 from threading import Thread
+import universal
 import scenes
+import debug
 
 #import all your scenes here
 import scene1
 import scene2
     
 #driver settings
-options = webdriver.ChromeOptions()
-options.add_argument('--ignore-certificate-errors')
-options.add_argument('--ignore-ssl-errors')
+OPTIONS = webdriver.ChromeOptions()
+OPTIONS.add_argument('--ignore-certificate-errors')
+OPTIONS.add_argument('--ignore-ssl-errors')
 
-driverPath = "chromedriver.exe"
-driver = webdriver.Chrome(driverPath, chrome_options=options)
-driver.get("https://www.google.com")
+DRIVERPATH = "chromedriver.exe"
+DRIVER = webdriver.Chrome(DRIVERPATH, options=OPTIONS)
+START_URL = "https://www.google.com"
 
+#put in your scenes here (using the value in scenes.py as index for each scene)
 scenes_int2imp = [scene1, scene2]
 
 currentScene = scenes_int2imp[0]
-currentScene.load_scene(driver)
-print("[driver] current scene is " + currentScene.name)
+currentScene.load_scene(DRIVER)
+debug.log(f"current scene is {currentScene.name}", "driver")
 
 class Handler(BaseHTTPRequestHandler):
     #only un-comment do_GET when testing on local_host
@@ -44,7 +47,7 @@ class Handler(BaseHTTPRequestHandler):
 
         #post_data = post_data.replace("inp=", "")  #only un-comment this line when testing on localhost
 
-        print("[server] received post request: " + post_data)
+        debug.log(f"received post request: {post_data}", "server")
 
         try:
             post_data = int(post_data)
@@ -52,41 +55,40 @@ class Handler(BaseHTTPRequestHandler):
             post_data = None
         
         if post_data != None:
-            response = input_handler(driver, post_data)
+            response = input_handler(DRIVER, post_data)
 
         if response != None:
             #self.wfile.write(("resp: " + response).encode()) #only un-comment this line when testing on localhost
             
             self.send_response(200, response)
-            print("[server] responded: " + str(response))
+            debug.log(f"responded: {response}", "server")
 
 def input_handler(driver, buttonPressed):
     response = None
 
-    if buttonPressed == rb.power:
-        driver.quit()
-        quit()
-    elif buttonPressed == rb.rld:
-        response = "reloading page..."
-        driver.refresh()
+    if (response := universal.input_handler(DRIVER, buttonPressed)):
+        pass
     else:
         global currentScene
 
-        (newScene, response) = currentScene.input_handler(driver, buttonPressed)
+        (newScene, response) = currentScene.input_handler(DRIVER, buttonPressed)
         
         if newScene != None:
             currentScene = scenes_int2imp[newScene]
             
-            response = currentScene.load_scene(driver)
-            print("[driver] switched scene to " + currentScene.name)
+            response = currentScene.load_scene(DRIVER)
+            debug.log(f"switched scene to {currentScene.name}", "driver")
     
     return response
 
 #server settings
-port = 8080
-server_adress = ("0.0.0.0", port)
-server = HTTPServer(server_adress, Handler)
+PORT = 8080
+SERVER_ADRESS = ("0.0.0.0", PORT)
+SERVER = HTTPServer(SERVER_ADRESS, Handler)
 
-serverThread = Thread(target=server.serve_forever)
-serverThread.start()
-print("[server] server running on port " + str(port))
+if __name__ == "__main__":
+    DRIVER.get(START_URL)
+
+    serverThread = Thread(target=SERVER.serve_forever)
+    serverThread.start()
+    debug.log(f"server running on port {PORT}", "server")
